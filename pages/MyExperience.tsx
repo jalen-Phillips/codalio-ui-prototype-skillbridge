@@ -1,27 +1,7 @@
+import { TASKS_DATA, TaskDataItem, getCompletedTasksForResume, setTaskWorkState, subscribeTaskStore } from "../components/TaskCard";
+import { ArrowLeft, Award, Briefcase, Building2, Calendar, Check, CheckCircle2, Copy, DollarSign, FileText, Quote, ShieldCheck, Sparkles } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  ArrowLeft,
-  Award,
-  Briefcase,
-  Building2,
-  Calendar,
-  Check,
-  CheckCircle2,
-  Copy,
-  DollarSign,
-  FileText,
-  Quote,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
-import {
-  TASKS_DATA,
-  TaskDataItem,
-  getCompletedTasksForResume,
-  setTaskWorkState,
-  subscribeTaskStore,
-} from "../components/TaskCard";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../components/ui/card";
@@ -36,9 +16,8 @@ function MyExperienceSection0() {
 
   const completedTasks = getCompletedTasksForResume();
   const totalEarned = completedTasks.reduce((sum, t) => sum + t.payNumeric, 0);
-
   return (
-    <section className="w-full" aria-label="My Experience Header and Verification Statement">
+    <section className="w-full" aria-label="My Experience Header & Verification Statement">
       <Card className="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
         <CardContent className="p-6 sm:p-8 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
@@ -145,17 +124,29 @@ function MyExperienceSection1() {
 
   const handleDemoCompleteFirstTask = () => {
     const first = TASKS_DATA[0];
-    setTaskWorkState(first.id, () => ({
+    setTaskWorkState(first.id, (prev) => ({
+      ...prev,
       checkedSteps: [true, true, true, true],
       notes: first.sampleNotes,
       submitted: true,
       addedToResume: true,
+      skillCheckPassed: true,
+      resumeIncluded: prev.resumeIncluded,
+      skillCheck: {
+        ...prev.skillCheck,
+        status: "evaluated",
+        score: 5,
+        skillCheckPassed: true,
+        taskUnlocked: true,
+      },
     }));
   };
-
-  if (completedTasks.length === 0) {
-    return (
-      <section aria-label="Empty Experience State" className="w-full">
+  return (
+    <section
+      aria-label="Resume-Style Verified Paid Work Entries & Empty State"
+      className="space-y-6 w-full"
+    >
+      {completedTasks.length === 0 ? (
         <Card className="rounded-2xl bg-card border-2 border-dashed border-border p-8 sm:p-12 text-center shadow-sm">
           <div className="max-w-md mx-auto flex flex-col items-center justify-center gap-4">
             <div className="h-14 w-14 rounded-2xl bg-secondary text-primary flex items-center justify-center">
@@ -192,140 +183,135 @@ function MyExperienceSection1() {
             </div>
           </div>
         </Card>
-      </section>
-    );
-  }
+      ) : (
+        <>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-heading font-bold text-foreground">
+                Resume-Style Work Experience Entries ({completedTasks.length})
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Paid work verified by the company, not volunteering or co-op.
+              </p>
+            </div>
 
-  return (
-    <section
-      aria-label="Resume-Style Verified Paid Work Entries"
-      className="space-y-6 w-full"
-    >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-heading font-bold text-foreground">
-            Resume-Style Work Experience Entries ({completedTasks.length})
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Paid work verified by the company, not volunteering or co-op.
-          </p>
-        </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate("/")}
-          className="rounded-xl font-semibold self-start sm:self-auto"
-        >
-          Complete Another Task
-        </Button>
-      </div>
-
-      <div className="flex flex-col gap-6">
-        {completedTasks.map((task) => {
-          const isCopied = copiedId === task.id;
-          return (
-            <Card
-              key={task.id}
-              className="rounded-2xl bg-card border border-border shadow-sm overflow-hidden"
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/")}
+              className="rounded-xl font-semibold self-start sm:self-auto"
             >
-              <CardHeader className="p-6 sm:p-8 pb-4 space-y-4">
-                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                  <div className="space-y-2.5">
-                    <CardTitle className="text-xl sm:text-2xl font-heading font-bold text-foreground leading-snug">
-                      {task.title}, Micro-Internship (Contract, Paid)
-                    </CardTitle>
+              Complete Another Task
+            </Button>
+          </div>
 
-                    <div className="flex flex-wrap items-center gap-3 text-sm">
-                      <span className="inline-flex items-center gap-1.5 font-semibold text-foreground">
-                        <Building2 className="h-4 w-4 text-primary shrink-0" />
-                        {task.company}
-                      </span>
+          <div className="flex flex-col gap-6">
+            {completedTasks.map((task) => {
+              const isCopied = copiedId === task.id;
+              return (
+                <Card
+                  key={task.id}
+                  className="rounded-2xl bg-card border border-border shadow-sm overflow-hidden"
+                >
+                  <CardHeader className="p-6 sm:p-8 pb-4 space-y-4">
+                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                      <div className="space-y-2.5">
+                        <CardTitle className="text-xl sm:text-2xl font-heading font-bold text-foreground leading-snug">
+                          {task.title}, Micro-Internship (Contract, Paid)
+                        </CardTitle>
 
-                      <span className="bg-accent text-accent-foreground border border-emerald-500/20 font-medium rounded-full px-3 py-0.5 text-xs inline-flex items-center gap-1.5">
-                        <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
-                        {task.badgeText}
-                      </span>
+                        <div className="flex flex-wrap items-center gap-3 text-sm">
+                          <span className="inline-flex items-center gap-1.5 font-semibold text-foreground">
+                            <Building2 className="h-4 w-4 text-primary shrink-0" />
+                            {task.company}
+                          </span>
 
-                      <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-                        <Calendar className="h-4 w-4 text-primary shrink-0" />
-                        {task.completedDate}
+                          <span className="bg-accent text-accent-foreground border border-emerald-500/20 font-medium rounded-full px-3 py-0.5 text-xs inline-flex items-center gap-1.5">
+                            <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+                            {task.badgeText}
+                          </span>
+
+                          <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                            <Calendar className="h-4 w-4 text-primary shrink-0" />
+                            {task.completedDate}
+                          </span>
+                        </div>
+                      </div>
+
+                      <Button
+                        variant={isCopied ? "secondary" : "default"}
+                        onClick={() => handleCopyEntry(task)}
+                        className="rounded-xl font-semibold shrink-0 self-start"
+                      >
+                        {isCopied ? (
+                          <>
+                            <Check className="h-4 w-4 mr-1.5 text-emerald-600" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-4 w-4 mr-1.5" />
+                            Copy Resume Entry
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    <div>
+                      <span className="bg-accent text-accent-foreground border border-emerald-500/30 font-semibold rounded-xl px-3.5 py-2 text-xs sm:text-sm inline-flex items-center gap-2">
+                        <DollarSign className="h-4 w-4 shrink-0" />
+                        Paid work experience: {task.pay} paid by {task.company}
                       </span>
                     </div>
-                  </div>
+                  </CardHeader>
 
-                  <Button
-                    variant={isCopied ? "secondary" : "default"}
-                    onClick={() => handleCopyEntry(task)}
-                    className="rounded-xl font-semibold shrink-0 self-start"
-                  >
-                    {isCopied ? (
-                      <>
-                        <Check className="h-4 w-4 mr-1.5 text-emerald-600" />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-4 w-4 mr-1.5" />
-                        Copy Resume Entry
-                      </>
-                    )}
-                  </Button>
-                </div>
+                  <CardContent className="px-6 sm:px-8 py-4 space-y-5">
+                    <div className="rounded-xl bg-muted/60 border border-border p-5 space-y-3">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Resume Experience Bullets
+                      </p>
+                      <ul className="space-y-2.5 list-disc list-inside text-sm sm:text-base text-foreground leading-relaxed">
+                        {task.resumeBullets.map((bullet, idx) => (
+                          <li key={idx} className="font-medium">
+                            {bullet}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
 
-                <div>
-                  <span className="bg-accent text-accent-foreground border border-emerald-500/30 font-semibold rounded-xl px-3.5 py-2 text-xs sm:text-sm inline-flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 shrink-0" />
-                    Paid work experience: {task.pay} paid by {task.company}
-                  </span>
-                </div>
-              </CardHeader>
+                    <div className="rounded-xl bg-accent/40 border border-emerald-500/20 p-4 flex items-start gap-3">
+                      <Quote className="h-5 w-5 text-accent-foreground shrink-0 mt-0.5" />
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-foreground italic">
+                          &ldquo;{task.feedback}&rdquo;
+                        </p>
+                        <p className="text-xs font-semibold text-accent-foreground">
+                          — {task.company} (Verified Review • {task.rating} rating)
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
 
-              <CardContent className="px-6 sm:px-8 py-4 space-y-5">
-                <div className="rounded-xl bg-muted/60 border border-border p-5 space-y-3">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Resume Experience Bullets
-                  </p>
-                  <ul className="space-y-2.5 list-disc list-inside text-sm sm:text-base text-foreground leading-relaxed">
-                    {task.resumeBullets.map((bullet, idx) => (
-                      <li key={idx} className="font-medium">
-                        {bullet}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="rounded-xl bg-accent/40 border border-emerald-500/20 p-4 flex items-start gap-3">
-                  <Quote className="h-5 w-5 text-accent-foreground shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-foreground italic">
-                      &ldquo;{task.feedback}&rdquo;
-                    </p>
-                    <p className="text-xs font-semibold text-accent-foreground">
-                      — {task.company} (Verified Review • {task.rating} rating)
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-
-              <CardFooter className="px-6 sm:px-8 py-4 bg-muted/30 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm">
-                <span className="font-semibold text-accent-foreground inline-flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 shrink-0" />
-                  Paid work verified by the company, not volunteering or co-op.
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate(`/tasks/${task.id}`)}
-                  className="text-xs font-medium self-start sm:self-auto"
-                >
-                  View Submitted Task
-                </Button>
-              </CardFooter>
-            </Card>
-          );
-        })}
-      </div>
+                  <CardFooter className="px-6 sm:px-8 py-4 bg-muted/30 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm">
+                    <span className="font-semibold text-accent-foreground inline-flex items-center gap-1.5">
+                      <CheckCircle2 className="h-4 w-4 shrink-0" />
+                      Paid work verified by the company, not volunteering or co-op.
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigate(`/tasks/${task.id}`)}
+                      className="text-xs font-medium self-start sm:self-auto"
+                    >
+                      View Submitted Task
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })}
+          </div>
+        </>
+      )}
     </section>
   );
 }

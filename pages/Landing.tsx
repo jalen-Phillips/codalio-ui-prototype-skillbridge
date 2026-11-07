@@ -1,12 +1,7 @@
+import TaskCard, { TASKS_DATA, getCompletedTasksForResume, getTaskWorkState, subscribeTaskStore } from "../components/TaskCard";
+import { Award, CheckCircle2, DollarSign, ShieldCheck, Sparkles } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Award, CheckCircle2, DollarSign, ShieldCheck, Sparkles } from "lucide-react";
-import TaskCard, {
-  TASKS_DATA,
-  getTaskWorkState,
-  subscribeTaskStore,
-  getCompletedTasksForResume,
-} from "../components/TaskCard";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
@@ -18,7 +13,6 @@ function LandingSection0() {
     "Verified Company Credentials",
     "Resume-Ready Work Experience",
   ];
-
   return (
     <section className="w-full" aria-label="Task Board Headline">
       <Card className="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
@@ -106,7 +100,6 @@ function LandingSection1() {
   const handleSelectTask = (id: string) => {
     navigate(`/tasks/${id}`);
   };
-
   return (
     <section aria-label="Paid Micro-Internship Cards" className="space-y-5 w-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -115,7 +108,7 @@ function LandingSection1() {
             Available Paid Micro-Internships
           </h2>
           <p className="text-sm text-muted-foreground">
-            Select any task card to view deliverables, complete the 4-step checklist, and get paid.
+            Select any task card to view deliverables, complete the work, and get paid.
           </p>
         </div>
         <div className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-accent-foreground bg-accent border border-emerald-500/20 px-3.5 py-1.5 rounded-full self-start sm:self-auto">
@@ -129,7 +122,7 @@ function LandingSection1() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {TASKS_DATA.map((task) => {
           const st = getTaskWorkState(task.id);
-          const hasProgress = st.checkedSteps.some(Boolean) || st.notes.trim().length > 0;
+          const hasProgress = st.notes.trim().length > 0;
           const status = st.submitted
             ? "completed"
             : hasProgress
@@ -146,6 +139,7 @@ function LandingSection1() {
               pay={task.pay}
               badgeText={task.badgeText}
               deliverable={task.deliverables}
+              hasSkillCheckGateway={task.requiresSkillCheck}
               status={status}
               onSelectTask={handleSelectTask}
             />

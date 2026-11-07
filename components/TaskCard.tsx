@@ -1,5 +1,5 @@
 import React from "react";
-import { CheckCircle2, Clock, Building2, ArrowRight, ShieldCheck } from "lucide-react";
+import { CheckCircle2, Clock, Building2, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
 
@@ -12,7 +12,9 @@ export interface TaskDataItem {
   pay: string;
   payNumeric: number;
   deadline: string;
+  description: string;
   deliverables: string;
+  requiresSkillCheck: boolean;
   evaluationCriteria: [string, string, string];
   checklistSteps: [string, string, string, string];
   sampleNotes: string;
@@ -32,8 +34,11 @@ export const TASKS_DATA: TaskDataItem[] = [
     pay: "$120",
     payNumeric: 120,
     deadline: "Due in 48 hours",
+    description:
+      "NorthPeak Apps needs 5 bugs fixed in the customer booking form (React + TypeScript). You will reproduce each bug, fix it, and send a short fix summary. Expected time: 4 hours. Pay: $120, paid on approval. Due in 48 hours.",
     deliverables:
       "Resolved Git pull request fixing 5 UI validation and state bugs in the customer booking form component, plus a brief bug resolution summary.",
+    requiresSkillCheck: true,
     evaluationCriteria: [
       "All 5 identified booking form validation bugs are reproducibly resolved",
       "Form error states display clear inline messages without page reload",
@@ -50,7 +55,7 @@ export const TASKS_DATA: TaskDataItem[] = [
     rating: "4/5",
     feedback:
       "Clean validation fixes and thorough test notes—ready for production merge.",
-    completedDate: "May 2025",
+    completedDate: "Nov 2026",
     resumeBullets: [
       "Resolved 5 production UI and validation defects in the customer booking workflow using React and TypeScript, eliminating form submission errors.",
       "Implemented inline field validation and duplicate-submit protection across 4 booking steps, verified by NorthPeak Apps engineering.",
@@ -65,8 +70,11 @@ export const TASKS_DATA: TaskDataItem[] = [
     pay: "$90",
     payNumeric: 90,
     deadline: "Due in 36 hours",
+    description:
+      "Cleaned Q3 regional sales spreadsheet (de-duplicated & standardized SKU rows) and a 1-page summary chart comparing monthly revenue by store category.",
     deliverables:
       "Cleaned Q3 regional sales spreadsheet (de-duplicated & standardized SKU rows) and a 1-page summary chart comparing monthly revenue by store category.",
+    requiresSkillCheck: false,
     evaluationCriteria: [
       "Zero duplicate transactions or unformatted date/currency cells remain",
       "Pivot summary accurately totals Q3 revenue across all 4 product categories",
@@ -83,7 +91,7 @@ export const TASKS_DATA: TaskDataItem[] = [
     rating: "4/5",
     feedback:
       "Spotless data hygiene and very clear regional revenue breakdown chart.",
-    completedDate: "May 2025",
+    completedDate: "Nov 2026",
     resumeBullets: [
       "Cleaned and standardized 1,200+ rows of Q3 retail transaction data for Maple Retail Co., eliminating duplicate records and formatting discrepancies.",
       "Built executive pivot summaries and regional revenue visualizations to guide seasonal inventory planning.",
@@ -98,8 +106,11 @@ export const TASKS_DATA: TaskDataItem[] = [
     pay: "$80",
     payNumeric: 80,
     deadline: "Due in 24 hours",
+    description:
+      "5 launch-ready social media posts (LinkedIn & Instagram) announcing the new plant-based snack line, complete with scroll-stopping hooks, body copy, and CTAs.",
     deliverables:
       "5 launch-ready social media posts (LinkedIn & Instagram) announcing the new plant-based snack line, complete with scroll-stopping hooks, body copy, and CTAs.",
+    requiresSkillCheck: false,
     evaluationCriteria: [
       "All 5 posts include a clear hook, benefit-driven body copy, and CTA",
       "Tone matches Brightleaf Foods' upbeat, transparent brand voice",
@@ -116,7 +127,7 @@ export const TASKS_DATA: TaskDataItem[] = [
     rating: "4/5",
     feedback:
       "Punchy hooks and spot-on brand voice—we're scheduling three of these for launch week.",
-    completedDate: "May 2025",
+    completedDate: "Nov 2026",
     resumeBullets: [
       "Authored 5 multi-channel product launch social media posts for Brightleaf Foods, aligning copy hooks and CTAs with brand voice guidelines.",
       "Crafted targeted LinkedIn and Instagram launch messaging highlighting nutritional and sustainability differentiators.",
@@ -131,8 +142,11 @@ export const TASKS_DATA: TaskDataItem[] = [
     pay: "$150",
     payNumeric: 150,
     deadline: "Due in 72 hours",
+    description:
+      "High-converting desktop and mobile hero section redesign with updated headline hierarchy, primary/secondary CTA buttons, and trust-badge layout.",
     deliverables:
       "High-converting desktop and mobile hero section redesign with updated headline hierarchy, primary/secondary CTA buttons, and trust-badge layout.",
+    requiresSkillCheck: false,
     evaluationCriteria: [
       "Clear visual hierarchy between headline, value proposition, and primary CTA",
       "Responsive layout adapts cleanly between desktop (1280px) and mobile (375px)",
@@ -149,7 +163,7 @@ export const TASKS_DATA: TaskDataItem[] = [
     rating: "4/5",
     feedback:
       "Strong typographic hierarchy and mobile layout—the CTA prominence is a huge upgrade.",
-    completedDate: "May 2025",
+    completedDate: "Nov 2026",
     resumeBullets: [
       "Redesigned responsive desktop and mobile landing page hero section for Lumen Studio, improving visual hierarchy and CTA prominence.",
       "Applied WCAG AA accessible color contrast and modular spacing tokens across breakpoints.",
@@ -157,35 +171,98 @@ export const TASKS_DATA: TaskDataItem[] = [
   },
 ];
 
+export interface SkillCheckState {
+  resumeIncluded: boolean;
+  stepResponses: [string, string, string, string, string];
+  status: "idle" | "reviewing" | "evaluated";
+  score: number;
+  skillCheckPassed: boolean;
+  taskUnlocked: boolean;
+}
+
 export interface TaskWorkState {
   checkedSteps: [boolean, boolean, boolean, boolean];
   notes: string;
   submitted: boolean;
   addedToResume: boolean;
+  skillCheckPassed: boolean;
+  resumeIncluded: boolean;
+  skillCheck: SkillCheckState;
+}
+
+function createInitialSkillCheck(requiresSkillCheck: boolean): SkillCheckState {
+  return {
+    resumeIncluded: true,
+    stepResponses: ["", "", "", "", ""],
+    status: "idle",
+    score: 0,
+    skillCheckPassed: !requiresSkillCheck,
+    taskUnlocked: !requiresSkillCheck,
+  };
 }
 
 const memoryStore: Record<string, TaskWorkState> = {
-  "task-1": { checkedSteps: [false, false, false, false], notes: "", submitted: false, addedToResume: false },
-  "task-2": { checkedSteps: [false, false, false, false], notes: "", submitted: false, addedToResume: false },
-  "task-3": { checkedSteps: [false, false, false, false], notes: "", submitted: false, addedToResume: false },
-  "task-4": { checkedSteps: [false, false, false, false], notes: "", submitted: false, addedToResume: false },
+  "task-1": {
+    checkedSteps: [false, false, false, false],
+    notes: "",
+    submitted: false,
+    addedToResume: false,
+    skillCheckPassed: false,
+    resumeIncluded: true,
+    skillCheck: createInitialSkillCheck(true),
+  },
+  "task-2": {
+    checkedSteps: [false, false, false, false],
+    notes: "",
+    submitted: false,
+    addedToResume: false,
+    skillCheckPassed: true,
+    resumeIncluded: true,
+    skillCheck: createInitialSkillCheck(false),
+  },
+  "task-3": {
+    checkedSteps: [false, false, false, false],
+    notes: "",
+    submitted: false,
+    addedToResume: false,
+    skillCheckPassed: true,
+    resumeIncluded: true,
+    skillCheck: createInitialSkillCheck(false),
+  },
+  "task-4": {
+    checkedSteps: [false, false, false, false],
+    notes: "",
+    submitted: false,
+    addedToResume: false,
+    skillCheckPassed: true,
+    resumeIncluded: true,
+    skillCheck: createInitialSkillCheck(false),
+  },
 };
 
 const listeners = new Set<() => void>();
 
 export function getTaskWorkState(taskId: string): TaskWorkState {
   if (!memoryStore[taskId]) {
+    const task = TASKS_DATA.find((t) => t.id === taskId);
+    const requiresCheck = Boolean(task?.requiresSkillCheck);
     memoryStore[taskId] = {
       checkedSteps: [false, false, false, false],
       notes: "",
       submitted: false,
       addedToResume: false,
+      skillCheckPassed: !requiresCheck,
+      resumeIncluded: true,
+      skillCheck: createInitialSkillCheck(requiresCheck),
     };
   }
   return memoryStore[taskId];
 }
 
-export function setTaskWorkState(taskId: string, updater: (prev: TaskWorkState) => TaskWorkState) {
+export function setTaskWorkState(
+  taskId: string,
+  updater: (prev: TaskWorkState) => TaskWorkState
+) {
   const current = getTaskWorkState(taskId);
   memoryStore[taskId] = updater(current);
   listeners.forEach((fn) => fn());
@@ -213,6 +290,7 @@ export default function TaskCard({
   pay,
   badgeText = "Verified company",
   deliverable,
+  hasSkillCheckGateway = false,
   status = "available",
   onSelectTask,
 }: {
@@ -223,6 +301,7 @@ export default function TaskCard({
   pay: string;
   badgeText?: string;
   deliverable?: string;
+  hasSkillCheckGateway?: boolean;
   status?: "available" | "in_progress" | "completed";
   onSelectTask?: (id: string) => void;
 }) {
@@ -247,10 +326,16 @@ export default function TaskCard({
                 <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
                 {badgeText}
               </span>
+              {hasSkillCheckGateway && status === "available" && (
+                <span className="bg-secondary text-secondary-foreground font-medium rounded-full px-2.5 py-0.5 text-xs inline-flex items-center gap-1">
+                  <Sparkles className="h-3 w-3 text-primary shrink-0" />
+                  Skill Check Gateway
+                </span>
+              )}
               {status === "completed" && (
                 <span className="bg-emerald-600 text-white font-semibold rounded-full px-2.5 py-0.5 text-xs inline-flex items-center gap-1">
                   <CheckCircle2 className="h-3 w-3 shrink-0" />
-                  Completed & Paid
+                  Completed &amp; Paid
                 </span>
               )}
               {status === "in_progress" && (
